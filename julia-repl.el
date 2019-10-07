@@ -82,6 +82,12 @@ Note that this affects all buffers using the ‘ansi-term’ map."
   :type 'boolean
   :group 'julia-repl)
 
+(defcustom julia-repl-return-to-window-after-eval nil
+  "When non-nil, return focus to the window/buffer from which line/region where sent to the terminal."
+  :type 'boolean
+  :group 'julia-repl)
+
+
 ;;
 ;; global variables
 ;;
@@ -481,6 +487,7 @@ Closed with a newline, unless used with a prefix argument.
 When PREFIX and SUFFIX are given, they are concatenated before
 and after."
   (interactive)
+  (let ((this-window (selected-window))
   (cl-flet ((-send-string (string)
                           (julia-repl--send-string
                            (concat prefix string suffix) 'prefix)))
@@ -491,7 +498,10 @@ and after."
           (deactivate-mark))
       (progn
         (-send-string (thing-at-point 'line t))
-        (forward-line)))))
+        (forward-line))))
+	(unless julia-repl-return-to-window-after-eval
+		(select-window this-window)
+	)))
 
 (defun julia-repl-edit ()
   "Call @edit on the expression.
